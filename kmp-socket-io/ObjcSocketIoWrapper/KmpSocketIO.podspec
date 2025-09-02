@@ -1,5 +1,5 @@
 Pod::Spec.new do |spec|
-    spec.name                     = 'ObjcSocketIoWrapper'
+    spec.name                     = 'KmpSocketIO'
     spec.version                  = '1.0.0'
     spec.homepage                 = 'https://github.com/terrakok/kmp-socketio'
     spec.source                   = { :git => 'https://github.com/terrakok/kmp-socketio' }
@@ -7,7 +7,7 @@ Pod::Spec.new do |spec|
     spec.license                  = { :type => 'MIT' }
     spec.summary                  = 'Objc SocketIO Wrapper'
 
-    spec.module_name              = "#{spec.name}"
+    spec.module_name              = "ObjcSocketIoWrapper"
     spec.source_files             = 'Sources/ObjcSocketIoWrapper/**.swift'
 
     spec.dependency 'Socket.IO-Client-Swift', '~> 16.1.1'
