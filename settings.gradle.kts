@@ -1,4 +1,4 @@
-rootProject.name = "KMP-SocketIO"
+rootProject.name = "KmpSocketIO"
 
 pluginManagement {
     repositories {
@@ -29,5 +29,4 @@ dependencyResolutionManagement {
     }
 }
 include(":kmp-socket-io")
-include(":sample:composeApp")
 

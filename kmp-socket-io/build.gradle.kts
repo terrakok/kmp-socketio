@@ -1,54 +1,61 @@
+@file:OptIn(
+    org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class,
+    org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class
+)
+
 plugins {
     alias(libs.plugins.multiplatform)
     alias(libs.plugins.android.library)
     alias(libs.plugins.maven.publish)
+    alias(libs.plugins.kotlinCocoapods)
 }
 
 kotlin {
-    jvmToolchain(17)
-
     androidTarget { publishLibraryVariants("release") }
     jvm()
-    js { browser() }
-    wasmJs { browser() }
     iosX64()
     iosArm64()
     iosSimulatorArm64()
 
-    sourceSets {
-        commonMain.dependencies {
-            implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.kotlinx.coroutines.test)
-        }
-
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-        }
-
-        androidMain.dependencies {
-            implementation(libs.kotlinx.coroutines.android)
-        }
-
-        jvmMain.dependencies {
-            implementation(libs.kotlinx.coroutines.swing)
-        }
-
-    }
-
-    //https://kotlinlang.org/docs/native-objc-interop.html#export-of-kdoc-comments-to-generated-objective-c-headers
-    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-        compilations["main"].compileTaskProvider.configure {
-            compilerOptions {
-                freeCompilerArgs.add("-Xexport-kdoc")
+    applyDefaultHierarchyTemplate {
+        common {
+            group("jvmCommon") {
+                withAndroidTarget()
+                withJvm()
             }
         }
     }
 
+    sourceSets {
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
+
+        val jvmCommonMain by getting
+        jvmCommonMain.dependencies {
+            implementation("io.socket:socket.io-client:2.1.2") {
+                exclude(group = "org.json", module = "json")
+            }
+        }
+        jvmMain.dependencies {
+            implementation("org.json:json:20250517")
+        }
+    }
+
+    cocoapods {
+        version = "1.0.0"
+        ios.deploymentTarget = "16.1"
+        noPodspec()
+        pod(name = "ObjcSocketIoWrapper") {
+            source = path(project.file("ObjcSocketIoWrapper"))
+            extraOpts += listOf("-compiler-option", "-fmodules")
+        }
+    }
 }
 
 android {
     namespace = "com.github.terrakok.socket"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 21
@@ -59,12 +66,12 @@ android {
 //https://www.jetbrains.com/help/kotlin-multiplatform-dev/multiplatform-publish-libraries.html
 mavenPublishing {
     publishToMavenCentral()
-    coordinates("com.github.terrakok.socket", "kmp-socket-io", "1.0.0")
+    coordinates("com.github.terrakok", "kmp-socketio", "1.0.0")
 
     pom {
-        name = "KMP-SocketIO"
-        description = "Kotlin Multiplatform library"
-        url = "github url" //todo
+        name = "KmpSocketIO"
+        description = "Kotlin Multiplatform library for Socket.IO"
+        url = "https://github.com/terrakok/kmp-socketio"
 
         licenses {
             license {
@@ -75,14 +82,14 @@ mavenPublishing {
 
         developers {
             developer {
-                id = "" //todo
-                name = "" //todo
-                email = "" //todo
+                id = "terrakok"
+                name = "Konstantin Tskhovrebov"
+                email = "terrakok@gmail.com"
             }
         }
 
         scm {
-            url = "github url" //todo
+            url = "https://github.com/terrakok/kmp-socketio"
         }
     }
     if (project.hasProperty("signing.keyId")) signAllPublications()
